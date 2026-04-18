@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top-Down Car Racer</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div class="score-container">
+            <div id="score">Score: 0</div>
+            <div id="top-score">Top Score: 0</div>
+        </div>
+        
+        <div id="game-over-modal" class="hidden">
+            <div class="modal-content">
+                <h1>GAME OVER!</h1>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <button id="restart-btn">RESTART</button>
+            </div>
+        </div>
+    </div>
+    <div id="game-container"></div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
