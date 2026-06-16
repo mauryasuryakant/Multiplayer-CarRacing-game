@@ -70,6 +70,17 @@
     const finalBestEl = $('final-best');
     const startBtn = $('start-btn');
     const restartBtn = $('restart-btn');
+    const settingsBtn = $('settings-btn');
+    const settingsOverlay = $('settings-overlay');
+    const resumeBtn = $('resume-btn');
+    const settingsRestartBtn = $('settings-restart-btn');
+    const backMenuBtn = $('back-menu-btn');
+    const sensitivitySlider = $('sensitivity-slider');
+    const sensitivityValue = $('sensitivity-value');
+
+    // ── Pause state ───────────────────────────────
+    let paused = false;
+    let sensitivityMult = 1.0; // 0.5 → 2.0
 
     // ============================================
     //  HELPERS
@@ -145,6 +156,11 @@
                 if (state === 'start') startGame();
                 else if (state === 'gameover') restartGame();
             }
+            // Escape key toggles pause
+            if (e.code === 'Escape' && state === 'playing') {
+                if (paused) resumeGame();
+                else pauseGame();
+            }
         });
         window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
@@ -153,6 +169,49 @@
         canvas.addEventListener('touchmove', onTouch, { passive: false });
         canvas.addEventListener('touchend', onTouchEnd, { passive: false });
         canvas.addEventListener('touchcancel', onTouchEnd, { passive: false });
+
+        // ── Settings button — MUST stop propagation so touch doesn't move the car ──
+        settingsBtn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+        }, { passive: false });
+        settingsBtn.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (state === 'playing' && !paused) pauseGame();
+        }, { passive: false });
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (state === 'playing' && !paused) pauseGame();
+        });
+
+        // ── Settings overlay buttons ──
+        // Stop all touch events on the settings overlay from reaching the canvas
+        settingsOverlay.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: false });
+        settingsOverlay.addEventListener('touchmove', (e) => { e.stopPropagation(); }, { passive: false });
+        settingsOverlay.addEventListener('touchend', (e) => { e.stopPropagation(); }, { passive: false });
+
+        resumeBtn.addEventListener('click', resumeGame);
+        settingsRestartBtn.addEventListener('click', () => {
+            settingsOverlay.classList.add('hidden');
+            paused = false;
+            restartGame();
+        });
+        backMenuBtn.addEventListener('click', () => {
+            settingsOverlay.classList.add('hidden');
+            paused = false;
+            state = 'start';
+            gameContainer.classList.add('hidden');
+            gameUI.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+
+        // ── Sensitivity slider ──
+        sensitivitySlider.addEventListener('input', () => {
+            const val = parseInt(sensitivitySlider.value);
+            sensitivityValue.textContent = val + '%';
+            sensitivityMult = val / 100;
+        });
 
         // ── Buttons ──
         startBtn.addEventListener('click', startGame);
@@ -172,6 +231,8 @@
     // ── Touch handlers ──
     function onTouch(e) {
         e.preventDefault();
+        // Ignore touch input while paused
+        if (paused) return;
         if (state === 'start') { startGame(); return; }
         if (state === 'gameover') { restartGame(); return; }
         const touch = e.touches[0];
@@ -196,10 +257,31 @@
     }
 
     // ============================================
+    //  PAUSE / RESUME
+    // ============================================
+    function pauseGame() {
+        if (state !== 'playing' || paused) return;
+        paused = true;
+        touchTargetX = null;
+        touchTargetY = null;
+        settingsOverlay.classList.remove('hidden');
+    }
+
+    function resumeGame() {
+        if (!paused) return;
+        paused = false;
+        settingsOverlay.classList.add('hidden');
+        // Reset timing so dt isn't huge after unpause
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // ============================================
     //  GAME START / RESTART
     // ============================================
     function startGame() {
         state = 'playing';
+        paused = false;
         score = 0;
         enemies = [];
         particles = [];
@@ -224,6 +306,7 @@
         // UI transitions
         startScreen.classList.add('hidden');
         gameOverModal.classList.add('hidden');
+        settingsOverlay.classList.add('hidden');
         gameContainer.classList.remove('hidden');
         gameUI.classList.remove('hidden');
 
@@ -240,7 +323,7 @@
     //  GAME LOOP
     // ============================================
     function gameLoop(timestamp) {
-        if (state !== 'playing') return;
+        if (state !== 'playing' || paused) return;
 
         const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
         lastTime = timestamp;
@@ -260,11 +343,12 @@
         roadScrollY += roadSpeed * dt;
 
         // ── Player movement (keyboard) ──
+        const effectiveSpeed = PLAYER_SPEED * sensitivityMult;
         let vx = 0, vy = 0;
-        if (keys['KeyA'] || keys['ArrowLeft']) vx = -PLAYER_SPEED;
-        else if (keys['KeyD'] || keys['ArrowRight']) vx = PLAYER_SPEED;
-        if (keys['KeyW'] || keys['ArrowUp']) vy = -PLAYER_SPEED;
-        else if (keys['KeyS'] || keys['ArrowDown']) vy = PLAYER_SPEED;
+        if (keys['KeyA'] || keys['ArrowLeft']) vx = -effectiveSpeed;
+        else if (keys['KeyD'] || keys['ArrowRight']) vx = effectiveSpeed;
+        if (keys['KeyW'] || keys['ArrowUp']) vy = -effectiveSpeed;
+        else if (keys['KeyS'] || keys['ArrowDown']) vy = effectiveSpeed;
 
         // ── Player movement (touch — car moves toward finger) ──
         if (touchTargetX !== null && touchTargetY !== null) {
@@ -274,7 +358,7 @@
             const deadzone = 3; // smaller deadzone for snappier touch response
             if (dist > deadzone) {
                 // Higher speed for touch: scales with distance for instant feel
-                const touchSpeed = PLAYER_SPEED * 2.5;
+                const touchSpeed = PLAYER_SPEED * 2.5 * sensitivityMult;
                 // Lerp factor: move faster when further from target
                 const speedMult = Math.min(dist / 40, 1); // ramp up over 40px
                 const finalSpeed = touchSpeed * (0.5 + 0.5 * speedMult);

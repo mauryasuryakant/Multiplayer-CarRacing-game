@@ -295,6 +295,211 @@ body {
     color: var(--accent-hot);
 }
 
+/* ============================================
+   SETTINGS GEAR BUTTON
+   Hidden on desktop — only visible on touch devices
+   ============================================ */
+.hud-settings-btn {
+    display: none; /* hidden by default (desktop) */
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    color: var(--text-muted);
+    cursor: pointer;
+    pointer-events: auto; /* clickable even though HUD parent is pointer-events:none */
+    transition: color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+    z-index: 30; /* above canvas */
+}
+
+.hud-settings-btn:hover,
+.hud-settings-btn:focus-visible {
+    color: var(--accent);
+    background: rgba(0, 229, 255, 0.1);
+    box-shadow: 0 4px 24px var(--accent-glow);
+    outline: none;
+}
+
+.hud-settings-btn:active {
+    transform: scale(0.92);
+}
+
+.hud-settings-btn svg {
+    transition: transform 0.35s ease;
+}
+
+.hud-settings-btn:hover svg,
+.hud-settings-btn:active svg {
+    transform: rotate(60deg);
+}
+
+/* Show settings button ONLY on touch / mobile / tablet */
+@media (pointer: coarse) {
+    .hud-settings-btn {
+        display: inline-flex;
+    }
+}
+
+/* ============================================
+   SETTINGS / PAUSE OVERLAY
+   ============================================ */
+#settings-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 60;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(5, 5, 12, 0.88);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.settings-panel {
+    max-width: 340px;
+    width: 90vw;
+}
+
+.settings-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 28px;
+    text-shadow: 0 0 30px var(--accent-glow);
+}
+
+.settings-section {
+    margin-bottom: 28px;
+}
+
+.settings-label {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.slider-container input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.slider-container input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.slider-value {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 48px;
+    text-align: right;
+}
+
+.slider-hints {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+}
+
+.settings-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, border-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.settings-action-btn:active {
+    transform: scale(0.96);
+}
+
+.resume-btn {
+    background: linear-gradient(135deg, var(--accent) 0%, #7c4dff 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.resume-btn:active {
+    box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.restart-action-btn:hover,
+.restart-action-btn:active {
+    border-color: var(--accent-hot);
+    color: var(--accent-hot);
+}
+
+.back-btn:hover,
+.back-btn:active {
+    border-color: var(--text-muted);
+}
+
 /* Score pop animation */
 .hud-value.pop {
     animation: scorePop 0.25s ease-out;
