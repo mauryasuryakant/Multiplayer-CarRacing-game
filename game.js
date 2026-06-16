@@ -271,12 +271,17 @@
             const dx = touchTargetX - (player.x + player.w / 2);
             const dy = touchTargetY - (player.y + player.h / 2);
             const dist = Math.sqrt(dx * dx + dy * dy);
-            const deadzone = 8;
+            const deadzone = 3; // smaller deadzone for snappier touch response
             if (dist > deadzone) {
-                vx = (dx / dist) * PLAYER_SPEED;
-                vy = (dy / dist) * PLAYER_SPEED;
-                // Snap to target if very close
-                if (dist < PLAYER_SPEED * dt) {
+                // Higher speed for touch: scales with distance for instant feel
+                const touchSpeed = PLAYER_SPEED * 2.5;
+                // Lerp factor: move faster when further from target
+                const speedMult = Math.min(dist / 40, 1); // ramp up over 40px
+                const finalSpeed = touchSpeed * (0.5 + 0.5 * speedMult);
+                vx = (dx / dist) * finalSpeed;
+                vy = (dy / dist) * finalSpeed;
+                // Snap to target if close enough (bigger threshold for responsiveness)
+                if (dist < finalSpeed * dt * 1.2) {
                     player.x = touchTargetX - player.w / 2;
                     player.y = touchTargetY - player.h / 2;
                     vx = 0;
