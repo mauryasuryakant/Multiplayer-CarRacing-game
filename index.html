@@ -53,6 +53,44 @@
                 <span class="hud-label">SPEED</span>
                 <span class="hud-value" id="speed">0</span>
             </div>
+            <button id="settings-btn" class="hud-settings-btn" aria-label="Settings">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ======== SETTINGS / PAUSE OVERLAY ======== -->
+    <div id="settings-overlay" class="hidden">
+        <div class="settings-panel glass-panel">
+            <h2 class="settings-title">PAUSED</h2>
+            <div class="settings-section">
+                <label class="settings-label" for="sensitivity-slider">SENSITIVITY</label>
+                <div class="slider-container">
+                    <input type="range" id="sensitivity-slider" min="50" max="200" value="100" step="5">
+                    <span class="slider-value" id="sensitivity-value">100%</span>
+                </div>
+                <div class="slider-hints">
+                    <span>Slow</span>
+                    <span>Fast</span>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button id="resume-btn" class="settings-action-btn resume-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                    <span>Resume</span>
+                </button>
+                <button id="settings-restart-btn" class="settings-action-btn restart-action-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    <span>Restart</span>
+                </button>
+                <button id="back-menu-btn" class="settings-action-btn back-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span>Main Menu</span>
+                </button>
+            </div>
         </div>
     </div>
 
