@@ -3,25 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top-Down Car Racer</title>
-    <link rel="stylesheet" href="/style.css">
+    <meta name="description" content="A thrilling top-down car racing game — dodge traffic, climb the leaderboard. Pure HTML5 Canvas game, no installs needed.">
+    <title>Top-Down Car Racer — Dodge &amp; Survive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="game-ui">
-        <div class="score-container">
-            <div id="score">Score: 0</div>
-            <div id="top-score">Top Score: 0</div>
+
+    <!-- ======== START SCREEN ======== -->
+    <div id="start-screen">
+        <div class="start-content">
+            <div class="title-glow">
+                <h1 id="game-title">CAR RACER</h1>
+                <p class="subtitle">DODGE &bull; SURVIVE &bull; DOMINATE</p>
+            </div>
+            <div class="controls-info">
+                <div class="key-row">
+                    <span class="key">W</span>
+                </div>
+                <div class="key-row">
+                    <span class="key">A</span>
+                    <span class="key">S</span>
+                    <span class="key">D</span>
+                </div>
+                <p class="controls-label">MOVE YOUR CAR</p>
+            </div>
+            <button id="start-btn" class="glow-btn">
+                <span>START GAME</span>
+            </button>
+            <p class="hint">or press <span class="key key-sm">ENTER</span></p>
         </div>
-        
-        <div id="game-over-modal" class="hidden">
-            <div class="modal-content">
-                <h1>GAME OVER!</h1>
-                <p>Final Score: <span id="final-score">0</span></p>
-                <button id="restart-btn">RESTART</button>
+        <div class="road-lines-bg" aria-hidden="true"></div>
+    </div>
+
+    <!-- ======== GAME HUD ======== -->
+    <div id="game-ui" class="hidden">
+        <div class="hud-bar">
+            <div class="hud-item" id="score-display">
+                <span class="hud-label">SCORE</span>
+                <span class="hud-value" id="score">0</span>
+            </div>
+            <div class="hud-item hud-best" id="best-display">
+                <span class="hud-label">BEST</span>
+                <span class="hud-value" id="top-score">0</span>
+            </div>
+            <div class="hud-item" id="speed-display">
+                <span class="hud-label">SPEED</span>
+                <span class="hud-value" id="speed">0</span>
             </div>
         </div>
     </div>
-    <div id="game-container"></div>
-    <script type="module" src="/src/main.js"></script>
+
+    <!-- ======== GAME CANVAS ======== -->
+    <div id="game-container" class="hidden">
+        <canvas id="game-canvas" width="420" height="640"></canvas>
+    </div>
+
+    <!-- ======== GAME OVER MODAL ======== -->
+    <div id="game-over-modal" class="hidden">
+        <div class="modal-content glass-panel">
+            <div class="crash-icon">💥</div>
+            <h1>WRECKED!</h1>
+            <div class="final-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="final-score">0</span>
+                </div>
+                <div class="stat-row best-row">
+                    <span class="stat-label">Best</span>
+                    <span class="stat-value" id="final-best">0</span>
+                </div>
+            </div>
+            <button id="restart-btn" class="glow-btn restart">
+                <span>RACE AGAIN</span>
+            </button>
+            <p class="hint">or press <span class="key key-sm">ENTER</span></p>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
 </body>
 </html>

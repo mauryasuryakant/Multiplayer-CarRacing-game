@@ -1,1 +1,10 @@
+# Dependencies (no longer used, but kept as safety net)
 node_modules
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode
+*.swp
