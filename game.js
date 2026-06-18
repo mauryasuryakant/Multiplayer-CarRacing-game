@@ -18,11 +18,10 @@
     const ENEMY_SPEED_MAX = 400;
 
     // Target car width on canvas (scales images proportionally)
-    // Original Phaser used 0.15 scale on ~370-740px images → ~55-111px
-    // We target 55px width for a good fit on the 420px canvas
-    const TARGET_CAR_W = 55;
-    const FALLBACK_CAR_W = 55;
-    const FALLBACK_CAR_H = 93;
+    // Increased from 55 to 75 for better visibility
+    const TARGET_CAR_W = 75;
+    const FALLBACK_CAR_W = 75;
+    const FALLBACK_CAR_H = 127;
 
     // ── State ──────────────────────────────────────
     let canvas, ctx;
@@ -38,11 +37,33 @@
     const images = {};
     const assetList = [
         { key: 'road', src: 'assets/road.jpg' },
-        { key: 'player', src: 'assets/white-car.avif' },
-        { key: 'enemy-red', src: 'assets/red-car.avif' },
-        { key: 'enemy-blue', src: 'assets/blue-car.avif' },
-        { key: 'enemy-yellow', src: 'assets/yellow-car.avif' },
+        // Player
+        { key: 'player', src: 'assets/Audi.png' },
+        // Bot cars (static)
+        { key: 'enemy-black-viper', src: 'assets/Black_viper.png' },
+        { key: 'enemy-car', src: 'assets/Car.png' },
+        { key: 'enemy-mini-truck', src: 'assets/Mini_truck.png' },
+        { key: 'enemy-mini-van', src: 'assets/Mini_van.png' },
+        { key: 'enemy-taxi', src: 'assets/taxi.png' },
+        { key: 'enemy-truck', src: 'assets/truck.png' },
+        // Police (static fallback + animation frames)
+        { key: 'enemy-police', src: 'assets/Police.png' },
+        { key: 'police-frame-1', src: 'assets/Police_animation/1.png' },
+        { key: 'police-frame-2', src: 'assets/Police_animation/2.png' },
+        { key: 'police-frame-3', src: 'assets/Police_animation/3.png' },
+        // Ambulance (static fallback + animation frames)
+        { key: 'enemy-ambulance', src: 'assets/Ambulance.png' },
+        { key: 'ambulance-frame-1', src: 'assets/ambulance_animation/1.png' },
+        { key: 'ambulance-frame-2', src: 'assets/ambulance_animation/2.png' },
+        { key: 'ambulance-frame-3', src: 'assets/ambulance_animation/3.png' },
     ];
+
+    // Animation frame keys for animated enemies
+    const animatedEnemies = {
+        'enemy-police': ['police-frame-1', 'police-frame-2', 'police-frame-3'],
+        'enemy-ambulance': ['ambulance-frame-1', 'ambulance-frame-2', 'ambulance-frame-3'],
+    };
+    const ANIM_FRAME_DURATION = 150; // ms per animation frame
 
     // ── Input ──────────────────────────────────────
     const keys = {};
@@ -52,7 +73,11 @@
     // ── Entities ───────────────────────────────────
     let player = null;
     let enemies = [];
-    const enemyTypes = ['enemy-red', 'enemy-blue', 'enemy-yellow'];
+    const enemyTypes = [
+        'enemy-black-viper', 'enemy-car', 'enemy-mini-truck',
+        'enemy-mini-van', 'enemy-taxi', 'enemy-truck',
+        'enemy-police', 'enemy-ambulance',
+    ];
 
     // ── Particles ──────────────────────────────────
     let particles = [];
@@ -407,16 +432,24 @@
                 continue;
             }
 
-            // ── Collision (AABB with fairness shrink) ──
-            const sx = 10;
-            const sy = 8;
+            // ── Update animation timer for animated enemies ──
+            if (e.animTime !== undefined) {
+                e.animTime += dt * 1000;
+            }
+
+            // ── Collision (per-axis overlap) ──
+            // X (left/right): trigger when horizontal overlap ≥ 60% of both cars' widths
+            // Y (top/bottom):  trigger when vertical overlap ≥ 30% of both cars' heights
+            const overlapX = Math.max(0, Math.min(player.x + player.w, e.x + e.w) - Math.max(player.x, e.x));
+            const overlapY = Math.max(0, Math.min(player.y + player.h, e.y + e.h) - Math.max(player.y, e.y));
             if (
-                player.x + sx < e.x + e.w - sx &&
-                player.x + player.w - sx > e.x + sx &&
-                player.y + sy < e.y + e.h - sy &&
-                player.y + player.h - sy > e.y + sy
+                overlapX >= player.w * 0.60 &&
+                overlapX >= e.w * 0.60 &&
+                overlapY >= player.h * 0.30 &&
+                overlapY >= e.h * 0.30
             ) {
-                triggerCrash(player.x + player.w / 2, player.y + player.h / 2);
+                // triggerCrash(player.x + player.w / 2, player.y + player.h / 2);
+                triggerCrash(player.x + player.w / 1.5, player.y + player.h / 1.5);
                 gameOver();
                 return;
             }
@@ -444,7 +477,7 @@
         const x = LANE_LEFT + Math.random() * (LANE_RIGHT - LANE_LEFT - size.w);
         const speed = ENEMY_SPEED_MIN + Math.random() * (ENEMY_SPEED_MAX - ENEMY_SPEED_MIN) + score * 2.5;
 
-        enemies.push({
+        const enemy = {
             x,
             y: -size.h - 30,    // spawn above screen (NPCs can be off-screen)
             w: size.w,
@@ -452,7 +485,14 @@
             speed,
             type: typeKey,
             scored: false,
-        });
+        };
+
+        // Animated enemies get a time tracker for frame cycling
+        if (animatedEnemies[typeKey]) {
+            enemy.animTime = 0;
+        }
+
+        enemies.push(enemy);
     }
 
     function triggerCrash(cx, cy) {
@@ -547,14 +587,28 @@
     // ── Enemies ──
     function drawEnemies() {
         enemies.forEach(e => {
-            const eImg = images[e.type];
-            if (eImg) {
-                ctx.drawImage(eImg, e.x, e.y, e.w, e.h);
+            let drawImg = images[e.type];
+
+            // Use animation frames for police / ambulance
+            const frames = animatedEnemies[e.type];
+            if (frames && e.animTime !== undefined) {
+                const frameIndex = Math.floor(e.animTime / ANIM_FRAME_DURATION) % frames.length;
+                const frameImg = images[frames[frameIndex]];
+                if (frameImg) drawImg = frameImg;
+            }
+
+            if (drawImg) {
+                ctx.drawImage(drawImg, e.x, e.y, e.w, e.h);
             } else {
                 const colorMap = {
-                    'enemy-red': ['#ff3333', '#cc0000'],
-                    'enemy-blue': ['#3399ff', '#0055cc'],
-                    'enemy-yellow': ['#ffcc00', '#cc9900'],
+                    'enemy-black-viper': ['#222222', '#111111'],
+                    'enemy-car': ['#cc4444', '#991111'],
+                    'enemy-mini-truck': ['#88aa44', '#556633'],
+                    'enemy-mini-van': ['#6688cc', '#334466'],
+                    'enemy-taxi': ['#ffcc00', '#cc9900'],
+                    'enemy-truck': ['#996633', '#664422'],
+                    'enemy-police': ['#3366ff', '#1133cc'],
+                    'enemy-ambulance': ['#ffffff', '#cc0000'],
                 };
                 const [fill, accent] = colorMap[e.type] || ['#ff3333', '#cc0000'];
                 drawCarShape(e.x, e.y, e.w, e.h, fill, accent);
