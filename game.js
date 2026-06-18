@@ -10,8 +10,15 @@
     const CANVAS_H = 640;
     const PLAYER_SPEED = 320;
     const ROAD_SCROLL_BASE = 360;
-    const LANE_LEFT = 50;
-    const LANE_RIGHT = 370;
+
+    // Road zone boundaries (based on background-1.png proportions)
+    // Dirt shoulders: 11.5% each side, Sidewalks: 6% each side, Asphalt: 65% center
+    // Left asphalt edge:  (11.5% + 6%) * 420 = 73.5 ≈ 74px
+    // Right asphalt edge: 420 - 74 = 346px
+    const ROAD_ASPHALT_LEFT = 74;
+    const ROAD_ASPHALT_RIGHT = 346;
+    const LANE_LEFT = ROAD_ASPHALT_LEFT;
+    const LANE_RIGHT = ROAD_ASPHALT_RIGHT;
     const SPAWN_DELAY_INITIAL = 1400;
     const SPAWN_DELAY_MIN = 450;
     const ENEMY_SPEED_MIN = 220;
@@ -36,7 +43,7 @@
     // ── Assets ─────────────────────────────────────
     const images = {};
     const assetList = [
-        { key: 'road', src: 'assets/road.jpg' },
+        { key: 'road', src: 'assets/background-1.png' },
         // Player
         { key: 'player', src: 'assets/Audi.png' },
         // Bot cars (static)
@@ -402,8 +409,8 @@
         player.x += vx * dt;
         player.y += vy * dt;
 
-        // ── Clamp player strictly inside canvas (cannot leave screen) ──
-        player.x = Math.max(0, Math.min(CANVAS_W - player.w, player.x));
+        // ── Clamp player to asphalt road only (cannot drive on sidewalks/dirt) ──
+        player.x = Math.max(ROAD_ASPHALT_LEFT, Math.min(ROAD_ASPHALT_RIGHT - player.w, player.x));
         player.y = Math.max(0, Math.min(CANVAS_H - player.h, player.y));
 
         // ── Spawn enemies ──
